@@ -1,9 +1,10 @@
-import pgzrun
 from settings import *
 from sprites import *
+import pygame
 from random import shuffle
 firstCard = None
 secondCard = None
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
 def make_board():
     board_maker = []
     for shape in ALLSHAPES:
@@ -27,7 +28,8 @@ def draw():
         for col in range(BOARDWIDTH):
             card = board[row][col]
             card.draw(screen)
-            
+    pygame.display.flip()
+    
 def on_mouse_down(pos):
     global firstCard, secondCard
     for y in range(BOARDHEIGHT):
@@ -73,9 +75,28 @@ def makeList(row, col):
         for k in range(col):
             board[i].append(None)
     return board
+
+def mainloop():
+    running = True
+    clock = pygame.time.Clock()
+    while running:
+            # event loop
+            update()
+            draw()
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+                    pygame.quit()
+                elif event.type == pygame.MOUSEMOTION:
+                    on_mouse_move(event.pos)
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    on_mouse_down(event.pos)
+            clock.tick(FPS)
+            
 board = makeList(BOARDHEIGHT, BOARDWIDTH)
 make_board()
-pgzrun.go()
+pygame.init()
+mainloop()
 
 
 
