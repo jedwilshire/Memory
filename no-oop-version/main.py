@@ -2,9 +2,13 @@ from settings import *
 from sprites import *
 import pygame
 from pygame import Rect, Surface
-from random import shuffle
+from random import shuffle, randint
+# global variables
 cards_selected = [None, None]
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
+debugging = True
+# board is defined after function definitions
+
 pygame.display.set_caption('MEMORY')
 def make_board():
     board_maker = []
@@ -31,8 +35,10 @@ def draw():
             if card.turnedUp == False:
                 if not card.highlighted:
                     pygame.draw.rect(screen, BOXCOLOR, card.rect)
-                else:
+                elif not debugging:
                     pygame.draw.rect(screen, HIGHLIGHTCOLOR, card.rect)
+                elif card.rect.collidepoint(pygame.mouse.get_pos()):
+                    screen.blit(card.back, card.rect)
             else:
                 screen.blit(card.back, card.rect)
     pygame.display.flip()
@@ -67,14 +73,29 @@ def on_mouse_move(pos):
             else:
                 card.highlighted = False
 def update():
+    count = 0 # if count == BOARDWIDTH * BOARDHEIGHT the game is won
     for y in range(BOARDHEIGHT):
         for x in range(BOARDWIDTH):
             card = board[y][x]
+            if card.matched == True:
+                count += 1
             if card.timer > 0:
                 card.timer -= 1
             elif not card.matched and not card == cards_selected[0]: # turn face down if not selected and not first card selected
                 card.turnedUp = False
-            
+#     if count == BOARDHEIGHT * BOARDWIDTH: # game won!
+#         FPS = 5
+#         for y in range(BOARDHEIGHT):
+#             for x in range(BOARDWIDTH):
+#                 board[y][x].turnedUp = randint(0, 5) >= 3
+
+def opening_animation(showX, showY):
+    for y in range(BOARDHEIGHT):
+        for x in range(BOARDWIDTH):
+            if x == showX and y == showY:
+                board[y][x].timer = 120
+                board[y][x].turnedUp = True
+                
 def makeList(row, col):
     board = []
     for i in range(row):
@@ -86,19 +107,34 @@ def makeList(row, col):
 def mainloop():
     running = True
     clock = pygame.time.Clock()
+    open_x = 0
+    open_y = 0
+    running_opening = True
+    timer = 0
     while running:
+        if running_opening == True and timer > 15:
+            timer = 0
+            opening_animation(open_x, open_y)
+            open_x += 1
+            if (open_x >= BOARDWIDTH):
+                open_x = 0
+                open_y += 1
+            if (open_y >= BOARDHEIGHT):
+                running_opening = False
             # event loop
-            update()
-            draw()
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    running = False
-                    pygame.quit()
-                elif event.type == pygame.MOUSEMOTION:
-                    on_mouse_move(event.pos)
-                elif event.type == pygame.MOUSEBUTTONDOWN:
-                    on_mouse_down(event.pos)
-            clock.tick(FPS)
+        if running_opening:
+            timer += 1
+        update()
+        draw()
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+                pygame.quit()
+            elif event.type == pygame.MOUSEMOTION:
+                on_mouse_move(event.pos)
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                on_mouse_down(event.pos)
+        clock.tick(FPS)
 
 def make_card(x, y, shape, color):
     card = pygame.sprite.Sprite()
@@ -140,8 +176,9 @@ def make_card(x, y, shape, color):
         pygame.draw.line(card.back, color, (0, BOXSIZE // 2),
                          (BOXSIZE // 2, 0))
     return card
-
+#global variable
 board = makeList(BOARDHEIGHT, BOARDWIDTH)
+
 make_board()
 pygame.init()
 mainloop()
