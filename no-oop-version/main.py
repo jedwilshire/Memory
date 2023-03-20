@@ -1,11 +1,13 @@
 from settings import *
 from sprites import *
 import pygame
-from pygame import Rect, Surface
 from random import shuffle
+# Global variables
 cards_selected = [None, None]
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
+# Set window caption
 pygame.display.set_caption('MEMORY')
+
 def make_board():
     board_maker = []
     for shape in ALLSHAPES:
@@ -87,29 +89,29 @@ def mainloop():
     running = True
     clock = pygame.time.Clock()
     while running:
-            # event loop
-            update()
-            draw()
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    running = False
-                    pygame.quit()
-                elif event.type == pygame.MOUSEMOTION:
-                    on_mouse_move(event.pos)
-                elif event.type == pygame.MOUSEBUTTONDOWN:
-                    on_mouse_down(event.pos)
-            clock.tick(FPS)
+        # event loop
+        update()
+        draw()
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+                pygame.quit()
+            elif event.type == pygame.MOUSEMOTION:
+                on_mouse_move(event.pos)
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                on_mouse_down(event.pos)
+        clock.tick(FPS)
 
 def make_card(x, y, shape, color):
     card = pygame.sprite.Sprite()
     card.shape = shape
     card.color = color
     card.turnedUp = False
-    card.rect = Rect(x, y, BOXSIZE, BOXSIZE)
+    card.rect = pygame.Rect(x, y, BOXSIZE, BOXSIZE)
     card.highlighted = False
     card.timer = 0
     card.matched = False
-    card.back = Surface((BOXSIZE, BOXSIZE))
+    card.back = pygame.Surface((BOXSIZE, BOXSIZE))
     card.back.fill(LIGHTBGCOLOR)
     if shape == DONUT:
         cx = BOXSIZE // 2
